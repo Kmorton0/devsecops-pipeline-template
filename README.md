@@ -70,7 +70,7 @@ After the fixes, GitHub's Code scanning page showed **200 closed alerts** from e
 
 ### Screenshots
 <!-- Upload images to docs/images/ and remove the comment markers around each line. -->
-<!-- ![Passing pipeline run](docs/images/passing-run.png) -->
+![Passing pipeline run](docs/images/passing-run.png)
 <!-- ![Failing pull request blocked by the gate](docs/images/failing-pr.png) -->
 ![Code scanning dashboard](docs/images/code-scanning.png)
 

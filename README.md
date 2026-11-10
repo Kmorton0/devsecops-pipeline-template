@@ -69,10 +69,15 @@ Trivy found **49 HIGH findings** in the Debian 13.7 base image, all in OS packag
 After the fixes, GitHub's Code scanning page showed **200 closed alerts** from earlier runs and **5 open** ones. The 5 open alerts were Checkov's reports of the checks I deliberately skipped (above). I dismissed each as **Won't fix** with a written reason, so the dashboard now records the same decision as the `checkov:skip` comments. CodeQL and Trivy had no open alerts.
 
 ### Screenshots
-<!-- Upload images to docs/images/ and remove the comment markers around each line. -->
+
 ![Passing pipeline run](docs/images/passing-run.png)
+*A passing run: all five scanners finish green and the Security gate unlocks merging.*
+
 ![Failing pull request blocked by the gate](docs/images/failing-pr.png)
+*A pull request with a deliberate misconfiguration: Checkov fails, the Security gate does not pass, and the merge button is disabled.*
+
 ![Code scanning dashboard](docs/images/code-scanning.png)
+*The Code scanning dashboard after the fixes: 200 earlier alerts closed, and the deliberately skipped checks dismissed with written reasons.*
 
 ## Using it in your own repo
 

@@ -62,7 +62,7 @@ jobs:
           sarif_file: checkov.sarif
           category: checkov
 
-    container-scan:
+  container-scan:
     name: Container scan (Trivy)
     runs-on: ubuntu-latest
     steps:

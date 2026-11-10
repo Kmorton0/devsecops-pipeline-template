@@ -66,13 +66,13 @@ Trivy found **49 HIGH findings** in the Debian 13.7 base image, all in OS packag
 - Kept a separate readable report step that prints **all** HIGH/CRITICAL findings, so nothing is hidden.
 
 ### 4. Code scanning dashboard
-After the fixes, GitHub's Code scanning page showed **200 closed alerts** from earlier runs and **5 open** ones. The 5 open alerts are Checkov's reports of the checks I deliberately skipped (above). CodeQL and Trivy had no open alerts.
+After the fixes, GitHub's Code scanning page showed **200 closed alerts** from earlier runs and **5 open** ones. The 5 open alerts were Checkov's reports of the checks I deliberately skipped (above). I dismissed each as **Won't fix** with a written reason, so the dashboard now records the same decision as the `checkov:skip` comments. CodeQL and Trivy had no open alerts.
 
 ### Screenshots
 <!-- Upload images to docs/images/ and remove the comment markers around each line. -->
 <!-- ![Passing pipeline run](docs/images/passing-run.png) -->
 <!-- ![Failing pull request blocked by the gate](docs/images/failing-pr.png) -->
-<!-- ![Code scanning dashboard](docs/images/code-scanning.png) -->
+![Code scanning dashboard](docs/images/code-scanning.png)
 
 ## Using it in your own repo
 

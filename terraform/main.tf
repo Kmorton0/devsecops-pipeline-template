@@ -26,13 +26,7 @@ resource "aws_s3_bucket" "demo" {
   # checkov:skip=CKV_AWS_144:Cross-region replication is out of scope for a demo bucket
 }
 
-resource "aws_s3_bucket_public_access_block" "demo" {
-  bucket                  = aws_s3_bucket.demo.id
-  block_public_acls       = true
-  block_public_policy     = true
-  ignore_public_acls      = true
-  restrict_public_buckets = true
-}
+
 
 resource "aws_s3_bucket_versioning" "demo" {
   bucket = aws_s3_bucket.demo.id

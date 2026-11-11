@@ -92,6 +92,35 @@ jobs:
           sarif_file: trivy.sarif
           category: trivy
 
+  dast-zap:
+    name: DAST (OWASP ZAP)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build image
+        run: docker build -t demo-app:${{ github.sha }} app/
+      - name: Start the app on a private Docker network
+        run: |
+          docker network create zapnet
+          docker run -d --name demo-app --network zapnet -p 8080:8080 demo-app:${{ github.sha }}
+          for i in $(seq 1 15); do
+            curl -fsS http://localhost:8080/health && break
+            sleep 2
+          done
+      - name: Prepare report folder
+        run: mkdir -p zap-out && chmod 777 zap-out
+      - name: ZAP baseline scan
+        run: |
+          docker run --rm --network zapnet -v "$PWD/zap-out:/zap/wrk:rw" \
+            ghcr.io/zaproxy/zaproxy:stable \
+            zap-baseline.py -t http://demo-app:8080 -r zap-report.html -I
+      - name: Upload ZAP report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: zap-report
+          path: zap-out/zap-report.html
+
   security-gate:
     name: Security gate
     runs-on: ubuntu-latest

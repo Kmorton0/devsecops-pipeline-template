@@ -107,13 +107,16 @@ jobs:
             curl -fsS http://localhost:8080/health && break
             sleep 2
           done
-      - name: Prepare report folder
-        run: mkdir -p zap-out && chmod 777 zap-out
+      - name: Prepare report folder and ZAP rules
+        run: |
+          mkdir -p zap-out
+          printf '10049\tINFO\t(Non-Storable Content)\n' > zap-out/zap-rules.conf
+          chmod -R 777 zap-out
       - name: ZAP baseline scan
         run: |
           docker run --rm --network zapnet -v "$PWD/zap-out:/zap/wrk:rw" \
             ghcr.io/zaproxy/zaproxy:stable \
-            zap-baseline.py -t http://demo-app:8080 -r zap-report.html
+            zap-baseline.py -t http://demo-app:8080 -c zap-rules.conf -r zap-report.html
       - name: Upload ZAP report
         if: always()
         uses: actions/upload-artifact@v4

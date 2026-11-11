@@ -113,7 +113,7 @@ jobs:
         run: |
           docker run --rm --network zapnet -v "$PWD/zap-out:/zap/wrk:rw" \
             ghcr.io/zaproxy/zaproxy:stable \
-            zap-baseline.py -t http://demo-app:8080 -r zap-report.html -I
+            zap-baseline.py -t http://demo-app:8080 -r zap-report.html
       - name: Upload ZAP report
         if: always()
         uses: actions/upload-artifact@v4
@@ -124,6 +124,6 @@ jobs:
   security-gate:
     name: Security gate
     runs-on: ubuntu-latest
-    needs: [sast-codeql, secret-scan, sca, iac-scan, container-scan]
+    needs: [sast-codeql, secret-scan, sca, iac-scan, container-scan, dast-zap]
     steps:
       - run: echo "All security checks passed."

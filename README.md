@@ -1,6 +1,6 @@
 # DevSecOps Pipeline Template
 
-A reusable GitHub Actions pipeline that adds security gates to a Python service: static analysis, secret scanning, dependency scanning, infrastructure-as-code scanning, container scanning, and dynamic application testing. Findings flow into the GitHub Security tab as SARIF, and a single required check blocks merges that fail.
+A reusable GitHub Actions pipeline that adds security gates to a Python service: static analysis, secret scanning, dependency scanning, infrastructure-as-code scanning, container scanning, and dynamic application testing. Scanner findings appear in the GitHub Security tab, the ZAP report is saved as a build artifact, and a single required check blocks merges that fail.
 
 > Demo project built on a sample app. It contains no employer code, configuration, or data.
 
@@ -63,7 +63,7 @@ Skips use `checkov:skip` comments with a written justification, so every excepti
 ### 3. Container vulnerabilities (Trivy)
 Trivy found **49 HIGH findings** in the Debian 13.7 base image, all in OS packages, none in Python code. Most were the same few CVEs repeated across packages (for example, util-linux issues listed under eight packages), and most had **no vendor fix available yet** (status `affected` or `fix_deferred`). Triage:
 
-- Added `apt-get upgrade` to the Dockerfile to pick up available patches (this covered the fixable zlib findings).
+- Added `apt-get upgrade` to the Dockerfile to pick up available patches (the readable report still lists everything unfixed).
 - Configured the gate with `ignore-unfixed: true`, so builds fail on vulnerabilities that **can** be patched rather than on ones nobody can fix yet.
 - Kept a separate readable report step that prints **all** HIGH/CRITICAL findings, so nothing is hidden.
 
@@ -87,7 +87,7 @@ After the fixes the scan reports **0 warnings, 0 failures, 67 passes, and 1 info
 ### Screenshots
 
 ![Passing pipeline run](docs/images/passing-run.png)
-*A passing run: all five scanners finish green and the Security gate unlocks merging.*
+*A passing run from before the DAST stage was added: all five scanners finish green and the Security gate unlocks merging.*
 
 ![Failing pull request blocked by the gate](docs/images/failing-pr.png)
 *A pull request with a deliberate misconfiguration: Checkov fails, the Security gate does not pass, and the merge button is disabled.*
@@ -108,6 +108,7 @@ After the fixes the scan reports **0 warnings, 0 failures, 67 passes, and 1 info
 3. Enable code scanning under *Settings > Advanced Security* so SARIF results appear in the Security tab.
 4. Run the pipeline once so the **Security gate** check exists.
 5. Under *Settings > Rules > Rulesets*, create a branch ruleset for the default branch that requires the **Security gate** check.
+6. The `dast-zap` job assumes the app listens on port 8080 and answers `/health`. Change those in the job if yours differs.
 
 ## Design decisions
 

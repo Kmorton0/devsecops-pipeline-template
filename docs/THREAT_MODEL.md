@@ -1,6 +1,6 @@
 # Threat Model: DevSecOps Pipeline Template
 
-**Status:** draft. This version covers scope, assets and trust boundaries. The data flow diagram and the STRIDE analysis come next.
+**Status:** in progress. This version covers scope, assets, actors and trust boundaries. A data flow diagram, a STRIDE threat analysis and mitigations will be added.
 
 ## Scope
 
@@ -54,18 +54,14 @@ On every pull request, GitHub Actions builds the container and runs six scanners
 | TB3 | Runner / third-party sources | Actions, pip packages, base image, scanner databases | Code and data from outside our control enter the build |
 | TB4 | Runner / app container | HTTP traffic from ZAP and the health check | The container runs on a private Docker network, with port 8080 mapped to the runner's localhost only |
 | TB5 | Pipeline / Security tab and artifacts | SARIF uploads and the ZAP report | Needs `security-events: write`. Results could be altered or suppressed |
-| TB6 | Maintainer / GitHub account | Sign-in and sessions | Depends on account authentication settings (see open questions) |
+| TB6 | Maintainer / GitHub account | Sign-in and sessions | Depends on account authentication settings (see assumptions) |
 | TB7 | Terraform / cloud account | Infrastructure changes | Not active today. It becomes a boundary when the app is deployed to AWS |
 
-## Open questions to verify
+## Assumptions
 
-- [ ] Is multi-factor authentication enabled on the maintainer's GitHub account?
-- [ ] Are secret scanning and push protection enabled for the repository?
-- [ ] Do all workflows use `pull_request` and avoid `pull_request_target`?
-- [ ] Which workflow permissions could be reduced further?
+This model assumes the following repository and account settings are in place:
 
-## Next steps
-
-1. Draw the data flow diagram with these boundaries (roadmap week 1, step 3).
-2. Walk each asset and boundary through STRIDE and record threats (step 4).
-3. Record the existing mitigation or the open gap for each threat (step 5).
+- Multi-factor authentication is enabled on the maintainer's GitHub account.
+- Secret scanning and push protection are enabled for the repository.
+- Workflows are triggered by `pull_request` and do not use `pull_request_target`.
+- Workflow permissions stay limited to what each job needs.

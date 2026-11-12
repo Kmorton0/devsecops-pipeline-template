@@ -1,6 +1,6 @@
 # Threat Model: DevSecOps Pipeline Template
 
-**Status:** in progress. This version covers scope, assets, actors, trust boundaries, a data flow diagram and a STRIDE threat list. Mitigations and residual risk will be added.
+**Status:** living document. Covers scope, assets, actors, trust boundaries, a data flow diagram, a STRIDE threat list, and current mitigations.
 
 ## Scope
 
@@ -95,7 +95,7 @@ flowchart LR
 
 ## Threats (STRIDE)
 
-Each asset and trust boundary was reviewed against the six STRIDE categories: **S**poofing, **T**ampering, **R**epudiation, **I**nformation disclosure, **D**enial of service, and **E**levation of privilege. Mitigations and residual risk for each threat will be documented separately.
+Each asset and trust boundary was reviewed against the six STRIDE categories: **S**poofing, **T**ampering, **R**epudiation, **I**nformation disclosure, **D**enial of service, and **E**levation of privilege. Mitigations and residual risk for each threat follow in the next section.
 
 | ID | STRIDE | Asset / boundary | Threat |
 |---|---|---|---|
@@ -115,6 +115,38 @@ Each asset and trust boundary was reviewed against the six STRIDE categories: **
 | T14 | D | TB3 | An outage or rate limit at a scanner database, registry or action source makes the gate fail, which blocks merges |
 | T15 | E | A2, A6, TB2, TB4 | A pull request changes the Dockerfile or workflow so that arbitrary commands run on the runner during the build or scan |
 | T16 | E | A4, TB2 | A compromised action uses the workflow token's permissions, such as `security-events: write`, to upload false results or reach beyond its purpose |
+
+## Mitigations and residual risk
+
+**Status key:** *Mitigated* means a control addresses the threat well for this project. *Partial* means a control exists but a gap remains. *Open* means no real control yet. *Accepted* means the risk is understood and tolerated for this project.
+
+| ID | Existing mitigation | Status | Remaining gap and next action |
+|---|---|---|---|
+| T1 | Multi-factor authentication on the maintainer account (see assumptions) | Partial | Review active sessions and consider a passkey or hardware key |
+| T2 | pip dependencies are pinned to exact versions, and pip-audit checks them for known vulnerabilities | Partial | pip-audit does not detect typosquats. Pin the base image by digest and review new dependencies by hand |
+| T3 | The ruleset requires the **Security gate** check | Open | Confirm the required check's source is pinned to GitHub Actions in the ruleset |
+| T4 | Branch protection routes every change through a pull request that must pass the gate | Partial | A PR's edited workflow judges itself. Review every `security.yml` diff by hand, and require a second reviewer if collaborators are added |
+| T5 | Actions are referenced by version tag | Open | Pin every action to a full commit hash, and use Dependabot to propose updates |
+| T6 | Every skipped check and dismissed alert carries a written reason, and the ZAP rule change is documented in the README | Partial | Review all skips and dismissals periodically so none outlives its reason |
+| T7 | pip-audit (SCA) and Trivy (image) fail the gate on fixable vulnerabilities, and the Dockerfile applies available OS patches | Partial | Known-vulnerability scanning does not catch malicious packages. Add Dependabot and an SBOM |
+| T8 | Pull request history and written dismissal reasons give a record of changes | Partial | Document the intended protection settings in the repo and review them regularly |
+| T9 | Commits made in the GitHub web editor are signed by GitHub and show as Verified | Partial | Enable the ruleset option to require signed commits, if available |
+| T10 | Gitleaks scans the full history on every run, the repo stores no real secrets, and GitHub masks the workflow token in logs | Mitigated | Confirm push protection is enabled |
+| T11 | The demo app holds no sensitive data, so public reports reveal little | Accepted | On a real project, keep reports and findings private |
+| T12 | The Terraform uses example names only, is never applied, and is scanned by Checkov | Mitigated | Add a `.gitignore` for state and variable files before any real deployment |
+| T13 | GitHub requires approval before running workflows from new contributors' pull requests | Partial | Add workflow concurrency so superseded runs are cancelled |
+| T14 | The gate fails closed on purpose, and a failed run can be re-run | Accepted | Document how to handle a prolonged outage without bypassing the gate |
+| T15 | Each job runs on an ephemeral GitHub-hosted runner with a read-only token by default, and the repo holds no secrets for a malicious build to steal | Mitigated | Keep secrets out of any workflow that runs on pull requests |
+| T16 | Workflow permissions are read-only except `security-events: write` and `pull-requests: read` | Partial | Move permissions to the job level so only the SARIF upload jobs get `security-events: write`, and pin actions |
+
+**Summary:** 3 mitigated, 9 partial, 2 open, 2 accepted.
+
+### Priority actions
+
+1. Pin all actions to commit hashes and enable Dependabot (T2, T5, T7, T16).
+2. Move workflow permissions to the job level (T16).
+3. Pin the required check's source in the ruleset and review workflow changes by hand (T3, T4).
+4. Add a `.gitignore` for Terraform state and variable files before any deployment (T12).
 
 ## Assumptions
 

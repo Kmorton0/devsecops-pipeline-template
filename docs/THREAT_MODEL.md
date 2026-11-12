@@ -1,6 +1,6 @@
 # Threat Model: DevSecOps Pipeline Template
 
-**Status:** in progress. This version covers scope, assets, actors and trust boundaries. A data flow diagram, a STRIDE threat analysis and mitigations will be added.
+**Status:** in progress. This version covers scope, assets, actors, trust boundaries and a data flow diagram. A STRIDE threat analysis and mitigations will be added.
 
 ## Scope
 
@@ -56,6 +56,42 @@ On every pull request, GitHub Actions builds the container and runs six scanners
 | TB5 | Pipeline / Security tab and artifacts | SARIF uploads and the ZAP report | Needs `security-events: write`. Results could be altered or suppressed |
 | TB6 | Maintainer / GitHub account | Sign-in and sessions | Depends on account authentication settings (see assumptions) |
 | TB7 | Terraform / cloud account | Infrastructure changes | Not active today. It becomes a boundary when the app is deployed to AWS |
+
+## Data flow diagram
+
+Trust boundaries from the table above are labeled TB1 to TB7 on the arrows where data crosses them.
+
+```mermaid
+flowchart LR
+  subgraph EXT["Outside (untrusted)"]
+    CONTRIB["External contributor"]
+    TP["Third-party sources: actions, PyPI, base image, scanner databases"]
+  end
+  subgraph GH["GitHub"]
+    REPO["Repository and branch protection"]
+    subgraph RUN["GitHub-hosted runner"]
+      WF["Workflow: security.yml"]
+      SCANNERS["Scanners: CodeQL, Gitleaks, pip-audit, Checkov, Trivy, ZAP"]
+      subgraph NET["Private Docker network"]
+        APP["App container"]
+      end
+    end
+    SEC["Security tab and report artifact"]
+  end
+  MAINT["Maintainer"]
+  TF["Terraform demo"]
+  AWS["AWS account (not deployed)"]
+
+  MAINT -- "TB6 sign-in" --> REPO
+  CONTRIB -- "TB1 pull requests" --> REPO
+  REPO -- "TB2 workflow and code" --> WF
+  TP -- "TB3 dependencies and databases" --> WF
+  WF --> SCANNERS
+  SCANNERS -- "TB4 HTTP traffic from ZAP" --> APP
+  SCANNERS -- "TB5 SARIF and report" --> SEC
+  REPO --> TF
+  TF -. "TB7 not active today" .-> AWS
+```
 
 ## Assumptions
 

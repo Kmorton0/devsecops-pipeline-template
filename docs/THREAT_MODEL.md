@@ -1,6 +1,6 @@
 # Threat Model: DevSecOps Pipeline Template
 
-**Status:** in progress. This version covers scope, assets, actors, trust boundaries and a data flow diagram. A STRIDE threat analysis and mitigations will be added.
+**Status:** in progress. This version covers scope, assets, actors, trust boundaries, a data flow diagram and a STRIDE threat list. Mitigations and residual risk will be added.
 
 ## Scope
 
@@ -92,6 +92,29 @@ flowchart LR
   REPO --> TF
   TF -. "TB7 not active today" .-> AWS
 ```
+
+## Threats (STRIDE)
+
+Each asset and trust boundary was reviewed against the six STRIDE categories: **S**poofing, **T**ampering, **R**epudiation, **I**nformation disclosure, **D**enial of service, and **E**levation of privilege. Mitigations and residual risk for each threat will be documented separately.
+
+| ID | STRIDE | Asset / boundary | Threat |
+|---|---|---|---|
+| T1 | S | A9, TB6 | An attacker steals the maintainer's credentials or session and pushes or merges changes as the maintainer |
+| T2 | S | A5, TB3 | A lookalike or typosquatted package, action or image is pulled into the build in place of the legitimate one |
+| T3 | S | A3, TB5 | A status check with the same name as **Security gate**, from another source, satisfies the required check, depending on how the check's source is configured |
+| T4 | T | A2, TB2 | A pull request edits `security.yml` to remove or weaken a scanner or the gate, and its own run is judged by the modified workflow |
+| T5 | T | A5, TB3 | A third-party action referenced by a version tag is moved to malicious code, which then runs in the pipeline |
+| T6 | T | A7, TB5 | Findings are hidden by skip comments, rule downgrades, or dismissed alerts that lack a real justification |
+| T7 | T | A5, A6, TB3 | A vulnerable or malicious version of a pip package or the base image enters the build and ships in the container |
+| T8 | R | A3, A9 | Changes to branch protection or alert dismissals cannot be attributed or explained later, because a personal repository may keep limited history |
+| T9 | R | A1, TB1 | A contributor denies authoring a malicious commit, and unsigned commits make attribution unreliable |
+| T10 | I | A1, A4 | A real credential or token is committed to the repo or printed in a workflow log |
+| T11 | I | A7, TB5 | Detailed scan reports and the Security tab reveal unpatched weaknesses to an attacker, which matters on a real project that is public |
+| T12 | I | A8 | Terraform code or variables expose real infrastructure details such as account IDs or resource names |
+| T13 | D | TB1, TB2 | Many pull requests or workflow runs exhaust Actions capacity and block legitimate checks |
+| T14 | D | TB3 | An outage or rate limit at a scanner database, registry or action source makes the gate fail, which blocks merges |
+| T15 | E | A2, A6, TB2, TB4 | A pull request changes the Dockerfile or workflow so that arbitrary commands run on the runner during the build or scan |
+| T16 | E | A4, TB2 | A compromised action uses the workflow token's permissions, such as `security-events: write`, to upload false results or reach beyond its purpose |
 
 ## Assumptions
 

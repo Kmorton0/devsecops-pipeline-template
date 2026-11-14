@@ -47,8 +47,8 @@ def health():
 
 @app.route("/users/<int:user_id>")
 def get_user(user_id):
-    # DELIBERATE FLAW for a code review exercise: no check that the caller
-    # is allowed to read this user's record (broken access control).
+    if user_id != current_user_id():
+        abort(403)
     return jsonify(USERS[user_id])
 
 

@@ -1,6 +1,20 @@
-from flask import Flask, jsonify
+from flask import Flask, abort, jsonify, request
 
 app = Flask(__name__)
+
+# Fake demo data. No real people or credentials.
+USERS = {
+    1: {"id": 1, "name": "Alice Example", "email": "alice@example.test"},
+    2: {"id": 2, "name": "Bob Example", "email": "bob@example.test"},
+}
+
+
+def current_user_id():
+    """Demo authentication: trust a header. A real app would use a session or token."""
+    try:
+        return int(request.headers.get("X-User-Id", "0"))
+    except ValueError:
+        return 0
 
 
 @app.after_request
@@ -29,6 +43,13 @@ def index():
 @app.route("/health")
 def health():
     return jsonify(status="ok")
+
+
+@app.route("/users/<int:user_id>")
+def get_user(user_id):
+    # DELIBERATE FLAW for a code review exercise: no check that the caller
+    # is allowed to read this user's record (broken access control).
+    return jsonify(USERS[user_id])
 
 
 if __name__ == "__main__":

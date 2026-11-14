@@ -1,0 +1,24 @@
+name: Semgrep demo
+
+on:
+  push:
+    branches: ["demo/**"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  semgrep:
+    name: Custom Semgrep rule
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install semgrep
+      - name: Test the rule against its test cases
+        run: semgrep --test --metrics=off semgrep/
+      - name: Scan the app with the rule
+        run: semgrep --config semgrep/flask-authz.yaml --metrics=off app/

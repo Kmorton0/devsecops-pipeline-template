@@ -1,0 +1,31 @@
+# .github/dependabot.yml
+# Keeps pinned action hashes, Python packages and the base image up to date.
+# Dependabot updates both the SHA and the "# vX.Y.Z" comment on pinned actions.
+version: 2
+updates:
+  # GitHub Actions used in .github/workflows/
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    groups:
+      actions:
+        patterns: ["*"]
+    commit-message:
+      prefix: "ci"
+
+  # Python packages in app/requirements.txt
+  - package-ecosystem: "pip"
+    directory: "/app"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "deps"
+
+  # Base image in the Dockerfile (change the directory if your Dockerfile is not in /app)
+  - package-ecosystem: "docker"
+    directory: "/app"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "docker"

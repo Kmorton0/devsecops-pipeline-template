@@ -1,4 +1,4 @@
-FROM python:3.12-slim
+FROM python:3.15-slim
 
 # Pull in the latest OS security patches available for the base image
 RUN apt-get update && apt-get upgrade -y && rm -rf /var/lib/apt/lists/*

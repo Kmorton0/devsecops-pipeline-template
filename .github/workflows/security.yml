@@ -11,25 +11,28 @@ permissions:
   security-events: write   # needed to upload SARIF results to the Security tab
   pull-requests: read
 
+# All third-party actions are pinned to full commit SHAs (version kept in the comment).
+# Dependabot (.github/dependabot.yml) opens PRs to bump both the SHA and the comment.
+
 jobs:
   sast-codeql:
     name: SAST (CodeQL)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: github/codeql-action/init@v3
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: github/codeql-action/init@d2aacf54c2fbc910db8d7ec338fdb54ea48c692d # v3.39.4
         with:
           languages: python
-      - uses: github/codeql-action/analyze@v3
+      - uses: github/codeql-action/analyze@d2aacf54c2fbc910db8d7ec338fdb54ea48c692d # v3.39.4
 
   secret-scan:
     name: Secret scanning (Gitleaks)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           fetch-depth: 0
-      - uses: gitleaks/gitleaks-action@v2
+      - uses: gitleaks/gitleaks-action@ff98106e4c7b2bc287b24eaf42907196329070c7 # v2.3.9
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -37,8 +40,8 @@ jobs:
     name: SCA (pip-audit)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
           python-version: "3.12"
       - run: pip install pip-audit
@@ -49,14 +52,14 @@ jobs:
     name: IaC scan (Checkov)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: bridgecrewio/checkov-action@v12
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: bridgecrewio/checkov-action@83b08f51b20950f791f5caadcc92e336b371eb12 # v12.3143.0
         with:
           directory: terraform/
           framework: terraform
           output_format: sarif
           output_file_path: checkov.sarif
-      - uses: github/codeql-action/upload-sarif@v3
+      - uses: github/codeql-action/upload-sarif@d2aacf54c2fbc910db8d7ec338fdb54ea48c692d # v3.39.4
         if: always()
         with:
           sarif_file: checkov.sarif
@@ -66,18 +69,18 @@ jobs:
     name: Container scan (Trivy)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - name: Build image
         run: docker build -t demo-app:${{ github.sha }} app/
       - name: Trivy readable report (shows everything)
-        uses: aquasecurity/trivy-action@v0.36.0
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
           image-ref: demo-app:${{ github.sha }}
           format: table
           severity: CRITICAL,HIGH
           exit-code: "0"
       - name: Trivy gate and SARIF (fixable HIGH/CRITICAL only)
-        uses: aquasecurity/trivy-action@v0.36.0
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
           image-ref: demo-app:${{ github.sha }}
           format: sarif
@@ -86,7 +89,7 @@ jobs:
           limit-severities-for-sarif: true
           ignore-unfixed: true
           exit-code: "1"          # gate: fail on HIGH/CRITICAL that have a fix available
-      - uses: github/codeql-action/upload-sarif@v3
+      - uses: github/codeql-action/upload-sarif@d2aacf54c2fbc910db8d7ec338fdb54ea48c692d # v3.39.4
         if: always()
         with:
           sarif_file: trivy.sarif
@@ -96,7 +99,7 @@ jobs:
     name: DAST (OWASP ZAP)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - name: Build image
         run: docker build -t demo-app:${{ github.sha }} app/
       - name: Start the app on a private Docker network
@@ -119,7 +122,7 @@ jobs:
             zap-baseline.py -t http://demo-app:8080 -c zap-rules.conf -r zap-report.html
       - name: Upload ZAP report
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: zap-report
           path: zap-out/zap-report.html

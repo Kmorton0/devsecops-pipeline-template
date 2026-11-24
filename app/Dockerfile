@@ -6,6 +6,8 @@ RUN apt-get update && apt-get upgrade -y && rm -rf /var/lib/apt/lists/*
 WORKDIR /srv
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
+# pip is only needed at build time; remove it to shrink the runtime attack surface
+RUN pip uninstall -y pip
 COPY app.py .
 
 RUN useradd --create-home appuser
